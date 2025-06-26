@@ -1,0 +1,39 @@
+version: "3.9"
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+      - mock-api
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/postgres
+
+  db:
+    image: postgres:14
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+
+  mock-api:
+    build: ./mock_api
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./mock_api:/app
+    command:
+      [
+        "flask",
+        "--app",
+        "mock_service.py",
+        "run",
+        "--host=0.0.0.0",
+        "--port=9000",
+      ]

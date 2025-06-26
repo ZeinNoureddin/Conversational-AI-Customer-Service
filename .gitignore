@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Environment
+.venv/
+venv/
+.env
+
+# IDEs
+.vscode/
+.idea/
+
+# Byte-compiled
+*.log
+*.sqlite3
+*.db
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# FastAPI & Cache
+*.migrations/
+*.db-journal
+
+# Docker
+*.pid
+*.sock
+*.tar
+docker-compose.override.yml
