@@ -33,7 +33,7 @@ INTENT_REQUIRED_PARAMS = {
     "get_order": ["order_id"],
     "update_profile": ["email"],
     "search_products": ["query"],
-    "get_my_orders": ["order_id"],
+    "get_my_orders": [],
     "chatting": []
 }
 
@@ -100,7 +100,7 @@ async def execute_intent_node(state: GraphState) -> GraphState:
         state["execution_response"] = search_products(parameters["query"])
     elif intent == "get_my_orders":
         # Call the function for 'get_my_orders' intent
-        state["execution_response"] = get_my_orders(parameters["order_id"])
+        state["execution_response"] = get_my_orders(state["user_id"])
     else:
         state["execution_response"] = {"error": "Unknown intent"}
 

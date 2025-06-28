@@ -5,7 +5,7 @@ SYSTEM_PROMPT = (
     "- get_order: order_id\n"
     "- update_profile: email\n"
     "- search_products: query\n"
-    "- get_my_orders: order_id\n"
+    "- get_my_orders: (no parameters required)\n"
     "- chatting: (no parameters required)\n"
     "You will receive a user message and must determine the intent and extract the necessary parameters. Use the chatting intent if the user is just chatting or asking general questions.\n"
     "Respond only with the intent and parameters in a JSON format, where the first attribute is the intent name and the second is an object containing the parameters and their values.\n"
