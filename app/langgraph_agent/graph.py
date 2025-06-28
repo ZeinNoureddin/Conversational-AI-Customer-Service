@@ -43,17 +43,17 @@ async def extract_intent_and_parameters_node(state: GraphState) -> GraphState:
         raw = match.group(0)
 
     print(f"GEMINI RESPONSE: {response.content.strip()}")
-    print(f"GEMINI RESPONSE NOT STRIPPED: {response.content}")
+    # print(f"GEMINI RESPONSE NOT STRIPPED: {response.content}")
 
     try:
         result = json.loads(raw)
-        print(f"Parsed result: {result}")
+        # print(f"Parsed result: {result}")
     except json.JSONDecodeError:
         result = {"intent": None, "parameters": {}}
-        print("FAILED to parse response, using default empty intent and parameters.")
+        # print("FAILED to parse response, using default empty intent and parameters.")
 
     state["intent"] = result.get("intent")
-    print(f"EXTRACTED INTENT: {state['intent']}")
+    # print(f"EXTRACTED INTENT: {state['intent']}")
     state["parameters"] = result.get("parameters", {})
     required = INTENT_REQUIRED_PARAMS.get(state["intent"], [])
     state["missing_params"] = [
@@ -72,7 +72,7 @@ async def ask_for_missing_node(state: GraphState) -> GraphState:
         f"Kindly ask the user to provide them one by one in a polite, conversational tone."
     )
     response = await model.ainvoke(prompt)
-    print(f"Response from Gemini: {response.content.strip()}")
+    # print(f"Response from Gemini: {response.content.strip()}")
     state["follow_up_prompt"] = response.content.strip()
     return state
 
@@ -110,3 +110,10 @@ async def run_graph(user_id: str, message: str) -> dict:
         "missing_params": result.get("missing_params", []),
         "follow_up_prompt": result.get("follow_up_prompt")
     }
+
+async def run_graph_with_state(state: GraphState) -> GraphState:
+    """Continues the graph from an existing state snapshot."""
+    print("HERE in run_graph_with_state")
+    print(f"STATE before invoking graph: {state}")
+    graph = build_graph()
+    return await graph.ainvoke(state)

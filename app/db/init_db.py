@@ -14,7 +14,7 @@
 #     init_db()
 
 from sqlmodel import SQLModel, create_engine, Session
-from app.db.models import User, Product, Order, Conversation
+from app.db.models import Users, Product, Order, Conversation
 import os
 from dotenv import load_dotenv
 from faker import Faker
@@ -31,7 +31,7 @@ STATUSES = ["pending", "shipped", "delivered"]
 def init_db():
     SQLModel.metadata.create_all(engine)
     with Session(engine) as session:
-        users = [User(name=fake.name(), email=fake.email()) for _ in range(15)]
+        users = [Users(name=fake.name(), email=fake.email()) for _ in range(15)]
         session.add_all(users)
         session.commit()
 
