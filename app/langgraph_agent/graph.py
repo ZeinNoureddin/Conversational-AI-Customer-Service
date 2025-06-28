@@ -5,6 +5,7 @@ from langgraph.graph import StateGraph, END
 from langchain_core.runnables import Runnable
 from langchain_google_genai import ChatGoogleGenerativeAI
 import json
+import re
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -17,7 +18,6 @@ class GraphState(TypedDict):
     missing_params: Optional[list[str]]
     follow_up_prompt: Optional[str]
 
-# Gemini model setup (Gemini 1.5 Flash)
 model = ChatGoogleGenerativeAI(model="gemini-1.5-flash", convert_system_message_to_human=True)
 
 from app.langgraph_agent.prompts import SYSTEM_PROMPT
@@ -29,40 +29,38 @@ INTENT_REQUIRED_PARAMS = {
     "get_my_orders": ["order_id"]
 }
 
-async def extract_intent_node(state: GraphState) -> GraphState:
+async def extract_intent_and_parameters_node(state: GraphState) -> GraphState:
     message = state["latest_user_message"]
-    prompt = f"{SYSTEM_PROMPT}\n\nUser: {message}\nIntent:"
+    prompt = f"{SYSTEM_PROMPT}\n\nUser: {message}\nAgain, respond with ONLY a JSON object, no markdown fences, no explanation."    
 
     response = await model.ainvoke(prompt)
-    intent = response.content.strip().lower()
-    state["intent"] = intent
-    return state
 
-async def extract_parameters_node(state: GraphState) -> GraphState:
-    intent = state["intent"]
-    message = state["latest_user_message"]
-    required = INTENT_REQUIRED_PARAMS.get(intent, [])
+    raw = response.content.strip()
+    raw = re.sub(r"^```(?:json)?\s*", "", raw)
+    raw = re.sub(r"\s*```$", "", raw)
+    match = re.search(r"\{[\s\S]*\}", raw)
+    if match:
+        raw = match.group(0)
 
-    param_prompt = (
-        f"You are an AI extracting parameters from a message for the '{intent}' intent.\n"
-        f"Required parameters: {', '.join(required)}\n"
-        f"User: {message}\n"
-        f"Respond with a JSON object with keys {required}"
-    )
-    response = await model.ainvoke(param_prompt)
+    print(f"GEMINI RESPONSE: {response.content.strip()}")
+    print(f"GEMINI RESPONSE NOT STRIPPED: {response.content}")
 
     try:
-        # extracted = eval(response.content)  # in production use `json.loads` with stricter formatting
-        extracted = json.loads(response.content)
-    except:
-        extracted = {}
+        result = json.loads(raw)
+        print(f"Parsed result: {result}")
+    except json.JSONDecodeError:
+        result = {"intent": None, "parameters": {}}
+        print("FAILED to parse response, using default empty intent and parameters.")
 
-    state["parameters"] = extracted
+    state["intent"] = result.get("intent")
+    print(f"EXTRACTED INTENT: {state['intent']}")
+    state["parameters"] = result.get("parameters", {})
+    required = INTENT_REQUIRED_PARAMS.get(state["intent"], [])
     state["missing_params"] = [
         key for key in required 
-        if key not in extracted or not extracted[key]
+        if key not in state["parameters"] or not state["parameters"][key]
     ]
-    print("HEREE extraction")
+
     return state
 
 async def ask_for_missing_node(state: GraphState) -> GraphState:
@@ -78,20 +76,16 @@ async def ask_for_missing_node(state: GraphState) -> GraphState:
     state["follow_up_prompt"] = response.content.strip()
     return state
 
-
-# Define the graph structure
 def build_graph() -> Runnable:
     builder = StateGraph(GraphState)
-    builder.add_node("extract_intent", extract_intent_node)
-    builder.add_node("extract_parameters", extract_parameters_node)
+    builder.add_node("extract_intent_and_parameters", extract_intent_and_parameters_node)
     builder.add_node("ask_for_missing", ask_for_missing_node)
     builder.add_node("end", lambda x: x)
 
-    builder.set_entry_point("extract_intent")
-    builder.add_edge("extract_intent", "extract_parameters")
+    builder.set_entry_point("extract_intent_and_parameters")
 
     builder.add_conditional_edges(
-        "extract_parameters",
+        "extract_intent_and_parameters",
         lambda s: "ask_for_missing" if s["missing_params"] else END
     )
 
@@ -99,7 +93,6 @@ def build_graph() -> Runnable:
 
     return builder.compile()
 
-# Entry point for FastAPI
 async def run_graph(user_id: str, message: str) -> dict:
     graph = build_graph()
     result = await graph.ainvoke({
