@@ -1,6 +1,7 @@
 from sqlmodel import Session, select
 from app.db.models import Users, Order, Product, Conversation
 from app.db.init_db import engine
+from typing import Optional
 
 
 def get_order(order_id: str):
@@ -25,9 +26,13 @@ def update_profile(user_id: str, updates: dict):
         session.refresh(user)
         return user
 
-def search_products(query: str):
+def search_products(product_type: str = None, price_filter: Optional[tuple] = None):
     with Session(engine) as session:
-        results = session.exec(select(Product).where(Product.name.ilike(f"%{query}%"))).all()
+        stmt = select(Product)
+        stmt = stmt.where(Product.type == product_type)
+        if price_filter:
+            stmt = stmt.where(Product.price >= price_filter[0], Product.price <= price_filter[1])
+        results = session.exec(stmt).all()
         return results
 
 def save_conversation(user_id: str, message: str, direction: str) -> None:

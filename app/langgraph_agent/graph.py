@@ -32,14 +32,17 @@ from app.langgraph_agent.prompts import SYSTEM_PROMPT
 INTENT_REQUIRED_PARAMS = {
     "get_order": ["order_id"],
     "update_profile": ["email"],
-    "search_products": ["query"],
+    "search_products": ["query"], 
     "get_my_orders": [],
     "chatting": []
 }
 
 async def extract_intent_and_parameters_node(state: GraphState) -> GraphState:
     message = state["latest_user_message"]
-    prompt = f"{SYSTEM_PROMPT}\n\nUser: {message}\nAgain, respond with ONLY a JSON object, no markdown fences, no explanation."    
+    prompt = (
+        f"{SYSTEM_PROMPT}\n\nUser: {message}\n"
+        "Again, respond with ONLY a JSON object, no markdown fences, no explanation."
+    )
 
     response = await model.ainvoke(prompt)
 
@@ -51,18 +54,17 @@ async def extract_intent_and_parameters_node(state: GraphState) -> GraphState:
         raw = match.group(0)
 
     print(f"\nGEMINI RESPONSE: {response.content.strip()}")
-    # print(f"\nGEMINI RESPONSE NOT STRIPPED: {response.content}")
 
     try:
         result = json.loads(raw)
-        # print(f"\nParsed result: {result}")
     except json.JSONDecodeError:
         result = {"intent": None, "parameters": {}}
-        # print("\nFAILED to parse response, using default empty intent and parameters.")
 
     state["intent"] = result.get("intent")
-    # print(f"\nEXTRACTED INTENT: {state['intent']}")
     state["parameters"] = result.get("parameters", {})
+    state["parameters"].setdefault("type", None)
+    state["parameters"].setdefault("price_filter", None)
+
     required = INTENT_REQUIRED_PARAMS.get(state["intent"], [])
     state["missing_params"] = [
         key for key in required 
@@ -90,16 +92,16 @@ async def execute_intent_node(state: GraphState) -> GraphState:
     parameters = state["parameters"]
 
     if intent == "get_order":
-        # Call the function for 'get_order' intent
         state["execution_response"] = get_order(parameters["order_id"])
     elif intent == "update_profile":
-        # Call the function for 'update_profile' intent
         state["execution_response"] = update_profile(parameters["email"])
     elif intent == "search_products":
-        # Call the function for 'search_products' intent
-        state["execution_response"] = search_products(parameters["query"])
+        state["execution_response"] = search_products(
+            # query=parameters["query"],
+            product_type=parameters.get("type"),
+            price_filter=parameters.get("price_filter")
+        )
     elif intent == "get_my_orders":
-        # Call the function for 'get_my_orders' intent
         state["execution_response"] = get_my_orders(state["user_id"])
     else:
         state["execution_response"] = {"error": "Unknown intent"}
@@ -113,13 +115,21 @@ async def formulate_response_node(state: GraphState) -> GraphState:
     user_message = state.get("latest_user_message", "")
     intent = state.get("intent", "unknown")
 
-    prompt = (
-        f"You are an AI assistant formulating a response for the user.\n"
-        f"The user requested: '{user_message}'.\n"
-        f"The intent identified was: '{intent}'.\n"
-        f"The result of the execution is: {execution_response}.\n"
-        f"Please provide a polite and concise response to the user summarizing what was executed and the result."
-    )
+    if intent == "search_products":
+        prompt = (
+            f"You are an AI assistant refining search results for the user.\n"
+            f"The user requested: '{user_message}'.\n"
+            f"The initial search results are: {execution_response}.\n"
+            "Please filter these results further based on the user's original request and provide a concise response."
+        )
+    else:
+        prompt = (
+            f"You are an AI assistant formulating a response for the user.\n"
+            f"The user requested: '{user_message}'.\n"
+            f"The intent identified was: '{intent}'.\n"
+            f"The result of the execution is: {execution_response}.\n"
+            "Please provide a polite and concise response to the user summarizing what was executed and the result."
+        )
 
     response = await model.ainvoke(prompt)
     state["LLM_response"] = response.content.strip()

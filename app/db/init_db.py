@@ -13,13 +13,12 @@
 # if __name__ == "__main__":
 #     init_db()
 
-from sqlmodel import SQLModel, create_engine, Session
+from sqlmodel import SQLModel, create_engine, Session, select
 from app.db.models import Users, Product, Order, Conversation
-import os
 from dotenv import load_dotenv
 from faker import Faker
+import os
 import random
-import json
 
 load_dotenv()
 database_url = os.getenv("DATABASE_URL")
@@ -28,28 +27,45 @@ fake = Faker()
 
 STATUSES = ["pending", "shipped", "delivered"]
 
+# Seed data for products
+seed_products = [
+    Product(name="IPhone 16", price=999.99, specs="Latest model", type="mobile"),
+    Product(name="MacBook Pro", price=1999.99, specs="16-inch, M2 chip", type="laptop"),
+    Product(name="T-shirt", price=19.99, specs="Cotton, size M", type="clothing"),
+    Product(name="Air Conditioner", price=499.99, specs="1.5 ton, energy efficient", type="home_appliance"),
+    Product(name="Samsung Galaxy S22", price=899.99, specs="128GB storage, 5G", type="mobile"),
+    Product(name="Dell XPS 13", price=1499.99, specs="13-inch, Intel i7", type="laptop"),
+    Product(name="Jeans", price=49.99, specs="Denim, size L", type="clothing"),
+    Product(name="Microwave Oven", price=199.99, specs="800W, compact", type="home_appliance"),
+    Product(name="Google Pixel 7", price=799.99, specs="128GB storage, 5G", type="mobile"),
+    Product(name="HP Spectre x360", price=1599.99, specs="15-inch, Intel i7", type="laptop"),
+    Product(name="Sweater", price=39.99, specs="Wool, size M", type="clothing"),
+    Product(name="Refrigerator", price=999.99, specs="Double door, energy efficient", type="home_appliance")
+]
+
 def init_db():
+    # Create tables
     SQLModel.metadata.create_all(engine)
+
     with Session(engine) as session:
+        # Seed users
         users = [Users(name=fake.name(), email=fake.email()) for _ in range(15)]
         session.add_all(users)
         session.commit()
 
-        products = [
-            Product(
-                name=fake.word().capitalize() + " Pro",
-                price=round(random.uniform(100, 2000), 2),
-                specs=json.dumps({"ram": f"{random.choice([8, 16, 32])}GB", "color": fake.color_name()}),
-                in_stock=random.choice([True, True, True, False])
-            ) for _ in range(15)
-        ]
-        session.add_all(products)
+        # Seed products
+        for product in seed_products:
+            session.add(product)
         session.commit()
 
+        # Retrieve saved products from the database
+        saved_products = session.exec(select(Product)).all()
+
+        # Seed orders
         for _ in range(15):
             session.add(Order(
                 user_id=random.choice(users).user_id,
-                product_id=random.choice(products).product_id,
+                product_id=random.choice(saved_products).product_id,  # Use product_id instead of id
                 quantity=random.randint(1, 5),
                 status=random.choice(STATUSES)
             ))

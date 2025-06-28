@@ -4,22 +4,12 @@ SYSTEM_PROMPT = (
     "Available intents and their required parameters are:\n"
     "- get_order: order_id\n"
     "- update_profile: email\n"
-    "- search_products: query\n"
+    "- search_products: query, price_filter (price_filter is optional, format: [min_price, max_price])\n"
     "- get_my_orders: (no parameters required)\n"
     "- chatting: (no parameters required)\n"
-    "You will receive a user message and must determine the intent and extract the necessary parameters. Use the chatting intent if the user is just chatting or asking general questions.\n"
+    "You will receive a user message and must determine the intent and extract the necessary parameters. "
+    "If the intent is search_products, you are required to identify what type of product the user is looking for and add that to the parameters. For example, if the user says 'I'm looking for a IPhone 16', you should extract 'IPhone 16' as the query and 'mobile' as the type.\n"
+    "The available types are: 'mobile', 'laptop', 'clothing', 'home_appliance'.\n"
+    "Use the chatting intent if the user is just chatting or asking general questions.\n"
     "Respond only with the intent and parameters in a JSON format, where the first attribute is the intent name and the second is an object containing the parameters and their values.\n"
 )
-
-
-# print(f"You are an AI extracting parameters from a message for the '{intent}' intent.\n"
-#         f"Required parameters: {', '.join(required)}\n"
-#         f"User: {message}\n"
-#         f"Respond with a JSON object with keys {required}")
-
-# INTENT_REQUIRED_PARAMS = {
-#     "get_order": ["order_id"],
-#     "update_profile": ["email"],
-#     "search_products": ["query"],
-#     "get_my_orders": ["order_id"]
-# }
