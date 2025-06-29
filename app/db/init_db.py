@@ -15,6 +15,7 @@
 
 from sqlmodel import SQLModel, create_engine, Session, select
 from app.core.models import Users, Product, Order, Conversation
+from app.security import hash_password 
 from dotenv import load_dotenv
 from faker import Faker
 import os
@@ -49,7 +50,14 @@ def init_db():
 
     with Session(engine) as session:
         # Seed users
-        users = [Users(name=fake.name(), email=fake.email()) for _ in range(15)]
+        users = [
+            Users(
+                name=fake.name(),
+                email=fake.email(),
+                hashed_password=hash_password(fake.password())  # Hash the password
+            )
+            for _ in range(15)
+        ]
         session.add_all(users)
         session.commit()
 

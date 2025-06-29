@@ -7,6 +7,7 @@ class Users(SQLModel, table=True):
     user_id: UUID = Field(default_factory=uuid4, primary_key=True)
     name: str
     email: str
+    hashed_password: str
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class Product(SQLModel, table=True):
@@ -34,3 +35,5 @@ class Conversation(SQLModel, table=True):
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     message: str
     direction: str  # 'user' or 'agent'
+
+    

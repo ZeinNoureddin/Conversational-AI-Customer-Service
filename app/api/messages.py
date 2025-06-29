@@ -1,24 +1,25 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from app.sessions.store import load_state, save_state
 from app.langgraph_agent.graph import run_graph_with_state, run_graph
 from app.db.functions import save_conversation
+from app.api.auth import get_current_user
+from app.core.models import Users
 
 router = APIRouter()
 
 class Message(BaseModel):
-    user_id: str
     message: str
 
 @router.post("/message")
-async def handle_message(msg: Message):
-    save_conversation(msg.user_id, msg.message, direction="user")
+async def handle_message(msg: Message, current_user: Users = Depends(get_current_user)):
+    save_conversation(str(current_user.user_id), msg.message, direction="user")
 
-    prev = load_state(msg.user_id)
+    prev = load_state(str(current_user.user_id))
 
     if prev:
         initial_state = {
-            "user_id": msg.user_id,
+            "user_id": str(current_user.user_id),
             "latest_user_message": msg.message,
             "intent": prev["intent"],
             "parameters": prev["parameters"],
@@ -27,13 +28,13 @@ async def handle_message(msg: Message):
         }
         result = await run_graph_with_state(initial_state)
     else:
-        result = await run_graph(user_id=msg.user_id, message=msg.message)
+        result = await run_graph(user_id=str(current_user.user_id), message=msg.message)
 
     agent_msg = result.get("follow_up_prompt") or "All set!"
     print(f"AGENT response: {agent_msg}")
 
-    save_conversation(msg.user_id, agent_msg, direction="agent")
+    save_conversation(str(current_user.user_id), agent_msg, direction="agent")
 
-    save_state(msg.user_id, result)
+    save_state(str(current_user.user_id), result)
 
     return {"response": result}
