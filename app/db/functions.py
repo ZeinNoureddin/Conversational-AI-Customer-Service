@@ -1,5 +1,5 @@
 from sqlmodel import Session, select
-from app.db.models import Users, Order, Product, Conversation
+from app.core.models import Users, Order, Product, Conversation
 from app.db.init_db import engine
 from typing import Optional
 

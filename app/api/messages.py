@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter
 from pydantic import BaseModel
-from app.state_store import load_state, save_state
+from app.sessions.store import load_state, save_state
 from app.langgraph_agent.graph import run_graph_with_state, run_graph
 from app.db.functions import save_conversation
 
@@ -37,14 +37,3 @@ async def handle_message(msg: Message):
     save_state(msg.user_id, result)
 
     return {"response": result}
-
-@router.post("/terminate_session")
-async def terminate_session(user_id: str):
-    from app.state_store import clear_state, load_state
-
-    prev = load_state(user_id)
-    if prev:
-        clear_state(user_id)
-        return {"message": "Session terminated successfully"}
-    else:
-        return {"message": "No active session found for the user"}

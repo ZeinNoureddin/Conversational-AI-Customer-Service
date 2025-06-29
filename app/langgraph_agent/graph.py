@@ -97,7 +97,6 @@ async def execute_intent_node(state: GraphState) -> GraphState:
         state["execution_response"] = update_profile(parameters["email"])
     elif intent == "search_products":
         state["execution_response"] = search_products(
-            # query=parameters["query"],
             product_type=parameters.get("type"),
             price_filter=parameters.get("price_filter")
         )

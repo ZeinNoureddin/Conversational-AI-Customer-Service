@@ -14,7 +14,7 @@
 #     init_db()
 
 from sqlmodel import SQLModel, create_engine, Session, select
-from app.db.models import Users, Product, Order, Conversation
+from app.core.models import Users, Product, Order, Conversation
 from dotenv import load_dotenv
 from faker import Faker
 import os

@@ -1,5 +1,7 @@
 from fastapi import FastAPI
-from .routes import router
+from app.api.messages import router as messages_router
+from app.api.chatbot_sessions import router as sessions_router
 
 app = FastAPI()
-app.include_router(router)
+app.include_router(messages_router)
+app.include_router(sessions_router)
