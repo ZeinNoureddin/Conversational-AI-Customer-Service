@@ -1,8 +1,6 @@
-# app/state_store.py
 from typing import Optional
 from app.langgraph_agent.graph import GraphState
 
-# simple in-memory map: user_id → last GraphState
 _SESSION_STORE: dict[str, GraphState] = {}
 
 def load_state(user_id: str) -> Optional[GraphState]:

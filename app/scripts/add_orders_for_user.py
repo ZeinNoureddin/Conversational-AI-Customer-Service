@@ -1,4 +1,3 @@
-import os
 from uuid import uuid4, UUID
 from datetime import datetime, timezone
 
@@ -10,13 +9,11 @@ USER_ID = UUID("7bc56007-ada0-4ca1-a640-a1fbddc16f48")
 
 def main():
     with Session(engine) as session:
-        # pull some product IDs to use
         products = session.exec(select(Product.product_id)).all()
         if not products:
             print("No products in database—run your seed script first!")
             return
 
-        # create 3 orders for that user, picking random products
         import random
         for _ in range(3):
             prod_id = random.choice(products)
@@ -34,7 +31,6 @@ def main():
         print("✅ Inserted 5 orders for user", USER_ID)
 
 if __name__ == "__main__":
-    # ensure .env is loaded if needed
     from dotenv import load_dotenv
     load_dotenv()
     main()

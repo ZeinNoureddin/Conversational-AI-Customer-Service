@@ -1,5 +1,3 @@
-# 6. app/langgraph_agent/graph.py
-# ---------------------
 from typing import TypedDict, Optional, Dict
 from langgraph.graph import StateGraph, END
 from langchain_core.runnables import Runnable

@@ -16,9 +16,8 @@ class Product(SQLModel, table=True):
     price: float
     specs: Optional[str]
     in_stock: bool = True
-    type: Optional[str]  # New attribute to classify product type
+    type: Optional[str] 
 
-# Define valid product types
 VALID_PRODUCT_TYPES = ["mobile", "laptop", "clothing", "home_appliance"]
 
 class Order(SQLModel, table=True):
@@ -34,6 +33,6 @@ class Conversation(SQLModel, table=True):
     user_id: UUID = Field(foreign_key="users.user_id")
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     message: str
-    direction: str  # 'user' or 'agent'
+    direction: str
 
     

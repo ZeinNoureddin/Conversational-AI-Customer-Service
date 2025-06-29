@@ -1,18 +1,3 @@
-# from sqlmodel import SQLModel, create_engine
-# from .models import User, Product, Order, Conversation
-# import os
-# from dotenv import load_dotenv
-
-# load_dotenv()
-# database_url = os.getenv("DATABASE_URL")
-# engine = create_engine(database_url)
-
-# def init_db():
-#     SQLModel.metadata.create_all(engine)
-
-# if __name__ == "__main__":
-#     init_db()
-
 from sqlmodel import SQLModel, create_engine, Session, select
 from app.core.models import Users, Product, Order, Conversation
 from app.security import hash_password 
@@ -28,7 +13,6 @@ fake = Faker()
 
 STATUSES = ["pending", "shipped", "delivered"]
 
-# Seed data for products
 seed_products = [
     Product(name="IPhone 16", price=999.99, specs="Latest model", type="mobile"),
     Product(name="MacBook Pro", price=1999.99, specs="16-inch, M2 chip", type="laptop"),
@@ -45,35 +29,30 @@ seed_products = [
 ]
 
 def init_db():
-    # Create tables
     SQLModel.metadata.create_all(engine)
 
     with Session(engine) as session:
-        # Seed users
         users = [
             Users(
                 name=fake.name(),
                 email=fake.email(),
-                hashed_password=hash_password(fake.password())  # Hash the password
+                hashed_password=hash_password(fake.password())
             )
             for _ in range(15)
         ]
         session.add_all(users)
         session.commit()
 
-        # Seed products
         for product in seed_products:
             session.add(product)
         session.commit()
 
-        # Retrieve saved products from the database
         saved_products = session.exec(select(Product)).all()
 
-        # Seed orders
         for _ in range(15):
             session.add(Order(
                 user_id=random.choice(users).user_id,
-                product_id=random.choice(saved_products).product_id,  # Use product_id instead of id
+                product_id=random.choice(saved_products).product_id,
                 quantity=random.randint(1, 5),
                 status=random.choice(STATUSES)
             ))
