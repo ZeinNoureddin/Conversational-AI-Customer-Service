@@ -11,7 +11,7 @@ router = APIRouter()
 class Message(BaseModel):
     message: str
 
-@router.post("/message")
+@router.post("/messages")
 async def handle_message(msg: Message, current_user: Users = Depends(get_current_user)):
     save_conversation(str(current_user.user_id), msg.message, direction="user")
 

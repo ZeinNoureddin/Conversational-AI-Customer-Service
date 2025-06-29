@@ -12,9 +12,9 @@ from app.core.schemas import Token, TokenData, UserCreate, UserRead
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/token")
 
-@router.post("/register", response_model=UserRead)
+@router.post("/users", response_model=UserRead)
 def register(u: UserCreate):
     with Session(engine) as session:
         exists = session.exec(select(Users).where(Users.email == u.email)).first()
