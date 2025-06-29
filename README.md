@@ -94,25 +94,50 @@ Endpoints
      "name": "John Doe"
    }
    ```
+   Curl snippet:
+   ```bash
+   curl -X 'POST' \
+   'http://localhost:8000/api/auth/users' \
+   -H 'accept: application/json' \
+   -H 'Content-Type: application/json' \
+   -d' {
+   "email": "zein@example.com",
+   "name": "Zein Noureddin",
+   "password": "zeinzein"
+   }'
+   ```
 
 ---
 
 2. Login
+
    - Endpoint: POST /api/auth/token
    - Description: Generate an access token for authentication.
    - Request:
+
    ```json
    {
      "email": "user@example.com",
      "password": "securepassword"
    }
    ```
+
    - Response:
+
    ```json
    {
      "access_token": "<jwt-token>",
      "token_type": "bearer"
    }
+   ```
+
+   Curl snippet:
+
+   ```bash
+   curl 'chrome-extension://blillmbchncajnhkjfdnincfndboieik/iframe/signup_login.html' \
+   -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' \
+   -H 'Accept: */*' \
+   -H 'Referer: http://localhost:8000/'
    ```
 
 ---
@@ -138,6 +163,17 @@ Endpoints
      }
    }
    ```
+   Curl snippet:
+   ```bash
+   curl -X 'POST' \
+   'http://localhost:8000/messages' \
+   -H 'Authorization: Bearer eyJhbGci0iJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIi0iI3YmM1NjAwNy1hZGEwLTRjYTEtYTYMC1hMWZiZGRjMTZmNDgiLCJleHAi0jE3NTEyMzU0MTB9.rgQ3txFGFEk7yo6IJhj3IA9zzPBJ54gbL5M6v8usqYY' \
+   -H 'accept: application/json' \
+   -H 'Content-Type: application/json' \
+   -d '{
+   "message": "can you tell me what'\''s the status of my order"
+   }'
+   ```
 
 ---
 
@@ -154,52 +190,60 @@ Endpoints
      "detail": "Session deleted"
    }
    ```
+   Curl snippet:
+   ```bash
+   curl -X 'DELETE' \
+   'http://localhost:8000/sessions' \
+   -H 'accept: application/json' \
+   -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3YmM1NjAwNy1hZGEwLTRjYTEtYTY0MC1hMWZiZGRjMTZmNDgiLCJleHAiOjE3NTEyMzk1NTR9.w5H8cmBB8ZA3_kGl9rJJsuNqlRIPtAyWokQ7pUdLLwo'
+   ```
 
 ---
 
 You can find screenshots of API calls in the `screenshots` directory.
 
 ## Models
+
 **Users**
 Represents a user in the system.
 
 - **Fields**:
-    - user_id (UUID): Unique identifier for the user.
-    - email (str): Email address of the user.
-    - name (str): Name of the user.
-    - hashed_password (str): Hashed password for authentication.
-    - created_at (datetime): Timestamp when the user was created.
+  - user_id (UUID): Unique identifier for the user.
+  - email (str): Email address of the user.
+  - name (str): Name of the user.
+  - hashed_password (str): Hashed password for authentication.
+  - created_at (datetime): Timestamp when the user was created.
 
 **Product**
 Represents a product available in the system.
 
 - **Fields**:
-    - product_id (UUID): Unique identifier for the product.
-    - name (str): Name of the product.
-    - price (float): Price of the product.
-    - specs (str): Specifications of the product.
-    - type (str): Type/category of the product.
+  - product_id (UUID): Unique identifier for the product.
+  - name (str): Name of the product.
+  - price (float): Price of the product.
+  - specs (str): Specifications of the product.
+  - type (str): Type/category of the product.
 
 **Order**
 Represents an order placed by a user.
 
 - **Fields**:
-    - order_id (UUID): Unique identifier for the order.
-    - user_id (UUID): Identifier of the user who placed the order.
-    - product_id (UUID): Identifier of the product ordered.
-    - quantity (int): Quantity of the product ordered.
-    - status (str): Status of the order (e.g., pending, shipped, delivered).
-    - created_at (datetime): Timestamp when the order was created.
+  - order_id (UUID): Unique identifier for the order.
+  - user_id (UUID): Identifier of the user who placed the order.
+  - product_id (UUID): Identifier of the product ordered.
+  - quantity (int): Quantity of the product ordered.
+  - status (str): Status of the order (e.g., pending, shipped, delivered).
+  - created_at (datetime): Timestamp when the order was created.
 
 **Conversation**
 Represents a conversation between the user and the chatbot. An entry to this table is created for each message sent by the user or the agent.
 
 - **Fields**:
-    - conversation_id (UUID): Unique identifier for the conversation.
-    - user_id (UUID): Identifier of the user involved in the conversation.
-    - message (str): Message content.
-    - direction (str): Direction of the message (e.g., user or agent).
-    - created_at (datetime): Timestamp when the message was sent.
+  - conversation_id (UUID): Unique identifier for the conversation.
+  - user_id (UUID): Identifier of the user involved in the conversation.
+  - message (str): Message content.
+  - direction (str): Direction of the message (e.g., user or agent).
+  - created_at (datetime): Timestamp when the message was sent.
 
 ## Example Chat
 
