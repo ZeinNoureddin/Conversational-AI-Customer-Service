@@ -6,7 +6,7 @@ from sqlmodel import Session, select
 from app.db.init_db import engine
 from app.core.models import Order, Product
 
-USER_ID = UUID("b47d8114-3530-460d-a2b3-95eb67904194")
+USER_ID = UUID("712fb960-661d-4d97-8913-174d793c7e65")
 
 def main():
     with Session(engine) as session:

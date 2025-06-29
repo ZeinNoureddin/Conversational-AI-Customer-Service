@@ -13,6 +13,7 @@ from app.db.functions import (
     search_products,
     get_my_orders
 )
+from fastapi import HTTPException
 
 load_dotenv()
 
@@ -91,19 +92,25 @@ async def execute_intent_node(state: GraphState) -> GraphState:
     intent = state["intent"]
     parameters = state["parameters"]
 
-    if intent == "get_order":
-        state["execution_response"] = get_order(parameters["order_id"])
-    elif intent == "update_profile":
-        state["execution_response"] = update_profile(parameters["email"])
-    elif intent == "search_products":
-        state["execution_response"] = search_products(
-            product_type=parameters.get("type"),
-            price_filter=parameters.get("price_filter")
-        )
-    elif intent == "get_my_orders":
-        state["execution_response"] = get_my_orders(state["user_id"])
-    else:
-        state["execution_response"] = {"error": "Unknown intent"}
+    try:
+        if intent == "get_order":
+            state["execution_response"] = get_order(parameters["order_id"])
+        elif intent == "update_profile":
+            state["execution_response"] = update_profile(state["user_id"], parameters["email"])
+        elif intent == "search_products":
+            state["execution_response"] = search_products(
+                product_type=parameters.get("type"),
+                price_filter=parameters.get("price_filter")
+            )
+        elif intent == "get_my_orders":
+            state["execution_response"] = get_my_orders(state["user_id"])
+        else:
+            state["execution_response"] = {"error": "Unknown intent"}
+    except HTTPException as e:
+        state["execution_response"] = {
+            "error": e.detail,
+            "status_code": e.status_code
+        }
 
     print(f"\nRESPONSE when executing intent '{intent}': {state['execution_response']}")
     return state

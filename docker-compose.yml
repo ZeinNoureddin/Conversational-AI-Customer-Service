@@ -1,4 +1,3 @@
-version: "3.9"
 services:
   api:
     build: .
@@ -8,7 +7,6 @@ services:
       - .:/app
     depends_on:
       - db
-      - mock-api
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/postgres
 
@@ -21,19 +19,8 @@ services:
       POSTGRES_DB: postgres
     ports:
       - "5432:5432"
-
-  mock-api:
-    build: ./mock_api
-    ports:
-      - "9000:9000"
     volumes:
-      - ./mock_api:/app
-    command:
-      [
-        "flask",
-        "--app",
-        "mock_service.py",
-        "run",
-        "--host=0.0.0.0",
-        "--port=9000",
-      ]
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
