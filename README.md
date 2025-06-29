@@ -1,6 +1,6 @@
-# Merx - A Conversational E-Commerce Agent
+# A Conversational E-Commerce Agent
 
-Merx is a shopping assistant backend powered by FastAPI, LangChain, and Google Generative AI. It provides APIs for managing user profiles, orders, and sessions, along with an AI-powered chatbot interface.
+This is a shopping assistant backend powered by FastAPI, LangChain, and Google Generative AI. It provides APIs for managing user profiles, orders, and sessions, along with an AI-powered chatbot interface.
 
 ---
 
